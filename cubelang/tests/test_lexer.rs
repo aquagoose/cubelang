@@ -17,7 +17,7 @@ fn basic_test() {
         Token::Eof
     ];
 
-    let tokens = Lexer::parse(CODE).tokens().to_vec();
+    let tokens = Lexer::parse(CODE).unwrap().tokens().to_vec();
     println!("{tokens:#?}");
 
     assert_eq!(expected, tokens);
@@ -34,7 +34,7 @@ fn string_test() {
         Token::Eof
     ];
 
-    let tokens = Lexer::parse(CODE).tokens().to_vec();
+    let tokens = Lexer::parse(CODE).unwrap().tokens().to_vec();
     println!("{tokens:#?}");
 
     assert_eq!(expected, tokens);
@@ -54,7 +54,7 @@ fn num_test() {
         Token::Eof
     ];
 
-    let tokens = Lexer::parse(CODE).tokens().to_vec();
+    let tokens = Lexer::parse(CODE).unwrap().tokens().to_vec();
     println!("{tokens:#?}");
 
     assert_eq!(expected, tokens);
@@ -85,7 +85,7 @@ fn math_test() {
         Token::Eof
     ];
 
-    let tokens = Lexer::parse(CODE).tokens().to_vec();
+    let tokens = Lexer::parse(CODE).unwrap().tokens().to_vec();
     println!("{tokens:#?}");
 
     assert_eq!(expected, tokens);
@@ -107,7 +107,129 @@ fn keyword_test() {
         Token::Eof
     ];
 
-    let tokens = Lexer::parse(CODE).tokens().to_vec();
+    let tokens = Lexer::parse(CODE).unwrap().tokens().to_vec();
+    println!("{tokens:#?}");
+
+    assert_eq!(expected, tokens);
+}
+
+#[test]
+fn invalid_test() {
+    const CODE: &str = "hello there &";
+
+    let result = Lexer::parse(CODE);
+    assert!(result.is_err());
+}
+
+#[test]
+fn full_test() {
+    const CODE: &str = "
+fn main()
+    x is 5 + 4.4 - -.67
+    y is 10
+    z is add(x, y)
+
+    # Reset time to 0.
+    Time:setTime(0)
+
+    if z is 15
+        log('Yeah!')
+    elif z is not 10.5
+        log(\"Huh?\")
+    else
+        prompt('???')
+    end
+
+    return false
+end";
+
+    let expected = vec![
+        // fn main()
+        Token::Keyword(Keyword::Fn),
+        Token::Identifier("main".to_string()),
+        Token::OpenParenthesis,
+        Token::CloseParenthesis,
+
+        // x is 5 + 4.4 - -.67
+        Token::Identifier("x".to_string()),
+        Token::Keyword(Keyword::Is),
+        Token::Number(5.0),
+        Token::Plus,
+        Token::Number(4.4),
+        Token::Minus,
+        Token::Number(-0.67),
+
+        // y is 10
+        Token::Identifier("y".to_string()),
+        Token::Keyword(Keyword::Is),
+        Token::Number(10.0),
+
+        // z is add(x, y)
+        Token::Identifier("z".to_string()),
+        Token::Keyword(Keyword::Is),
+        Token::Identifier("add".to_string()),
+        Token::OpenParenthesis,
+        Token::Identifier("x".to_string()),
+        Token::Comma,
+        Token::Identifier("y".to_string()),
+        Token::CloseParenthesis,
+
+        // Time:setTime(0)
+        Token::Identifier("Time".to_string()),
+        Token::Colon,
+        Token::Identifier("setTime".to_string()),
+        Token::OpenParenthesis,
+        Token::Number(0.0),
+        Token::CloseParenthesis,
+
+        // if z is 15
+        Token::Keyword(Keyword::If),
+        Token::Identifier("z".to_string()),
+        Token::Keyword(Keyword::Is),
+        Token::Number(15.0),
+
+        // log('Yeah!')
+        Token::Identifier("log".to_string()),
+        Token::OpenParenthesis,
+        Token::String("Yeah!".to_string()),
+        Token::CloseParenthesis,
+
+        // elif z is not 10.5
+        Token::Keyword(Keyword::Elif),
+        Token::Identifier("z".to_string()),
+        Token::Keyword(Keyword::Is),
+        Token::Keyword(Keyword::Not),
+        Token::Number(10.5),
+
+        // log("Huh?")
+        Token::Identifier("log".to_string()),
+        Token::OpenParenthesis,
+        Token::String("Huh?".to_string()),
+        Token::CloseParenthesis,
+
+        // else
+        Token::Keyword(Keyword::Else),
+
+        // prompt('???')
+        Token::Identifier("prompt".to_string()),
+        Token::OpenParenthesis,
+        Token::String("???".to_string()),
+        Token::CloseParenthesis,
+
+        // end
+        Token::Keyword(Keyword::End),
+
+        // return false
+        Token::Keyword(Keyword::Return),
+        Token::Keyword(Keyword::False),
+
+        // end
+        Token::Keyword(Keyword::End),
+
+        Token::Eof
+    ];
+
+    let tokens = Lexer::parse(CODE).unwrap().tokens().to_vec();
     println!("{tokens:#?}");
 
     assert_eq!(expected, tokens);

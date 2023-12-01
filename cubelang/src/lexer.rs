@@ -73,7 +73,7 @@ pub struct Lexer {
 }
 
 impl Lexer {
-    pub fn parse(code: &str) -> Self {
+    pub fn parse(code: &str) -> Result<Self, String> {
         let chars = code.chars();
 
         let mut tokens = Vec::new();
@@ -130,6 +130,16 @@ impl Lexer {
 
                 '\n' | '\r' | '\t' | ' ' => continue,
 
+                '#' => {
+                    while let Some((_, comment_c)) = enumerator.next() {
+                        if comment_c == '\n' {
+                            break;
+                        }
+                    }
+
+                    continue
+                },
+
                 // Handle strings.
                 // Cube supports both " and ' strings.
                 // TODO: String formatting, " strings should allow for %VAR% formats.
@@ -154,8 +164,7 @@ impl Lexer {
 
                 chr => {
                     if !chr.is_alphanumeric() {
-                        // TODO: Return a result, not panic.
-                        panic!("Unexpected token '{chr}'.");
+                        return Err(format!("Unexpected token '{chr}'"));
                     }
 
                     let mut tok_pos = 0;
@@ -192,9 +201,9 @@ impl Lexer {
 
         tokens.push(Token::Eof);
 
-        Self {
+        Ok(Self {
             tokens
-        }
+        })
     }
 
     pub fn tokens(&self) -> &Vec<Token> {
