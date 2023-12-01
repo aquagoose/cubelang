@@ -22,3 +22,20 @@ fn basic_test() {
 
     assert_eq!(expected, tokens);
 }
+
+#[test]
+fn string_test() {
+    const CODE: &str = "\"Hello world!\"'Hello world' '234234'";
+
+    let expected = vec![
+        Token::String("Hello world!".to_string()),
+        Token::String("Hello world".to_string()),
+        Token::String("234234".to_string()),
+        Token::Eof
+    ];
+
+    let tokens = Lexer::parse(CODE).tokens().to_vec();
+    println!("{tokens:#?}");
+
+    assert_eq!(expected, tokens);
+}

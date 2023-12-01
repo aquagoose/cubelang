@@ -51,11 +51,12 @@ pub struct Lexer {
 impl Lexer {
     pub fn parse(code: &str) -> Self {
         let chars = code.chars();
-        let mut current_pos = 0;
 
         let mut tokens = Vec::new();
 
-        for (pos, c) in chars.enumerate() {
+        let mut enumerator = chars.enumerate();
+
+        while let Some((pos, c)) = enumerator.next() {
             let token = match c {
                 '(' => Token::OpenParenthesis,
                 ')' => Token::CloseParenthesis,
@@ -78,14 +79,26 @@ impl Lexer {
 
                 '\n' | '\r' | '\t' | ' ' => continue,
 
-                _ => {
+                '"' | '\'' => {
+                    let mut tok_pos = 0;
+
+                    while let Some((string_pos, string_c)) = enumerator.next() {
+                        if string_c == c {
+                            tok_pos = string_pos;
+
+                            break;
+                        }
+                    }
+
+                    Token::String(code[pos + 1 .. tok_pos].to_string())
+                },
+
+                chr => {
                     continue;
                 }
             };
 
             tokens.push(token);
-
-            current_pos = pos;
         }
 
         tokens.push(Token::Eof);
