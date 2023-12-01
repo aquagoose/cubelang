@@ -1,3 +1,4 @@
+#[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     Identifier(String),
     Keyword(Keyword),
@@ -26,6 +27,7 @@ pub enum Token {
     Eof
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Keyword {
     End,
     Fn,
