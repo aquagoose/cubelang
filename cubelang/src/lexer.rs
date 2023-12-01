@@ -149,24 +149,32 @@ impl Lexer {
         let mut tok_pos = 0;
 
         loop {
-            let (pos, c) = match enumerator.next() {
+            // Instead of calling next(), we call peek().
+            // This is due to the way that our loops work.
+            // The main loop ALWAYS calls next(), meaning that it will skip an entire character.
+            // If there's a space, all good. If there isn't... then there are problems.
+            // In this case, we ONLY call next() if we KNOW that the next digit is a number.
+            let (pos, c) = match enumerator.peek() {
                 // Handle EOF scenario, we must bump the token position by 1, as the range used
                 // to get the number is exclusive on the upper bound.
                 None => {
                     tok_pos += 1;
                     break;
                 },
-                Some(p) => p
+                Some(p) => *p
             };
+
+            let pos = pos;
+            let c = c;
 
             tok_pos = pos;
 
             if !c.is_ascii_digit() && c != '.' {
                 break;
             }
-        };
 
-        //tok_pos += 1;
+            enumerator.next();
+        };
 
         Token::Number(code[pos .. tok_pos].parse().unwrap())
     }
