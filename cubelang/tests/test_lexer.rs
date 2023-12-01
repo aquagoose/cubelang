@@ -1,4 +1,4 @@
-use cubelang::lexer::{Lexer, Token};
+use cubelang::lexer::{Keyword, Lexer, Token};
 
 #[test]
 fn basic_test() {
@@ -82,6 +82,28 @@ fn math_test() {
         Token::Asterisk,
         Token::Number(-0.5),
         Token::CloseParenthesis,
+        Token::Eof
+    ];
+
+    let tokens = Lexer::parse(CODE).tokens().to_vec();
+    println!("{tokens:#?}");
+
+    assert_eq!(expected, tokens);
+}
+
+#[test]
+fn keyword_test() {
+    const CODE: &str = "if else none None data return 'sdfsdf' sdfsdf";
+
+    let expected = vec![
+        Token::Keyword(Keyword::If),
+        Token::Keyword(Keyword::Else),
+        Token::Keyword(Keyword::None),
+        Token::Identifier("None".to_string()),
+        Token::Keyword(Keyword::Data),
+        Token::Keyword(Keyword::Return),
+        Token::String("sdfsdf".to_string()),
+        Token::Identifier("sdfsdf".to_string()),
         Token::Eof
     ];
 

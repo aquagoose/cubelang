@@ -47,6 +47,27 @@ pub enum Keyword {
     False
 }
 
+impl Keyword {
+    pub fn get(text: &str) -> Option<Self> {
+        Some(match text {
+            "end" => Self::End,
+            "fn" => Self::Fn,
+            "data" => Self::Data,
+            "var" => Self::Var,
+            "return" => Self::Return,
+            "is" => Self::Is,
+            "not" => Self::Not,
+            "if" => Self::If,
+            "elif" => Self::Elif,
+            "else" => Self::Else,
+            "none" => Self::None,
+            "true" => Self::True,
+            "false" => Self::False,
+            _ => return None
+        })
+    }
+}
+
 pub struct Lexer {
     tokens: Vec<Token>
 }
@@ -127,13 +148,42 @@ impl Lexer {
                 },
 
                 // Handle numbers.
-                // TODO: Negative numbers.
                 '0'..='9' => {
                     Self::parse_number(&mut enumerator, code, pos)
                 }
 
                 chr => {
-                    continue;
+                    if !chr.is_alphanumeric() {
+                        // TODO: Return a result, not panic.
+                        panic!("Unexpected token '{chr}'.");
+                    }
+
+                    let mut tok_pos = 0;
+
+                    loop {
+                        let (pos, c) = match enumerator.peek() {
+                            None => {
+                                tok_pos += 1;
+                                break;
+                            },
+                            Some(p) => *p
+                        };
+
+                        tok_pos = pos;
+
+                        if !c.is_alphanumeric() {
+                            break;
+                        }
+
+                        enumerator.next();
+                    };
+
+                    let identifier = &code[pos .. tok_pos];
+
+                    match Keyword::get(identifier) {
+                        None => Token::Identifier(identifier.to_string()),
+                        Some(kw) => Token::Keyword(kw)
+                    }
                 }
             };
 
@@ -181,6 +231,4 @@ impl Lexer {
 
         Token::Number(code[pos .. tok_pos].parse().unwrap())
     }
-
-
 }
