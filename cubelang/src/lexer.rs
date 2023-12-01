@@ -69,8 +69,10 @@ impl Lexer {
 
                 '+' => Token::Plus,
                 '-' => {
+                    // Handle negative numbers - this also handles cases such as -.5, which makes me
+                    // die inside but it's valid according to the spec so we need to handle it!
                     if let Some(peek) = enumerator.peek() {
-                        if peek.1.is_ascii_digit() {
+                        if peek.1.is_ascii_digit() || peek.1 == '.' {
                             Self::parse_number(&mut enumerator, code, pos)
                         } else {
                             Token::Minus
@@ -88,6 +90,10 @@ impl Lexer {
                 ',' => Token::Comma,
 
                 '.' => {
+                    // Sadly, cubelang can handle numbers that start with a decimal point, with no
+                    // preceding number (for example, .5 or .123 as opposed to 0.5 or 0.123)
+                    // This code checks to see if the next character is a digit, and if so,
+                    // interprets it as a number.
                     if let Some(peek) = enumerator.peek() {
                         if peek.1.is_ascii_digit() {
                             Self::parse_number(&mut enumerator, code, pos)
@@ -163,9 +169,6 @@ impl Lexer {
                 },
                 Some(p) => *p
             };
-
-            let pos = pos;
-            let c = c;
 
             tok_pos = pos;
 

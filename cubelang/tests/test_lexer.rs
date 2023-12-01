@@ -62,7 +62,7 @@ fn num_test() {
 
 #[test]
 fn math_test() {
-    const CODE: &str = "(12 * 3) - 4 + 2.46 / (3 - -34.2437 * .5)";
+    const CODE: &str = "(12 * 3) - 4 + 2.46 / (3 - -34.2437 * -.5)";
 
     let expected = vec![
         Token::OpenParenthesis,
@@ -80,7 +80,7 @@ fn math_test() {
         Token::Minus,
         Token::Number(-34.2437),
         Token::Asterisk,
-        Token::Number(0.5),
+        Token::Number(-0.5),
         Token::CloseParenthesis,
         Token::Eof
     ];
