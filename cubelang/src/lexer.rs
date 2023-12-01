@@ -54,7 +54,7 @@ impl Lexer {
 
         let mut tokens = Vec::new();
 
-        let mut enumerator = chars.enumerate();
+        let mut enumerator = chars.enumerate().peekable();
 
         while let Some((pos, c)) = enumerator.next() {
             let token = match c {
@@ -79,6 +79,9 @@ impl Lexer {
 
                 '\n' | '\r' | '\t' | ' ' => continue,
 
+                // Handle strings.
+                // Cube supports both " and ' strings.
+                // TODO: String formatting, " strings should allow for %VAR% formats.
                 '"' | '\'' => {
                     let mut tok_pos = 0;
 
@@ -92,6 +95,24 @@ impl Lexer {
 
                     Token::String(code[pos + 1 .. tok_pos].to_string())
                 },
+
+                // Handle numbers.
+                // TODO: Negative numbers.
+                '0'..='9' => {
+                    let mut tok_pos = 0;
+
+                    while let Some((num_pos, num_c)) = enumerator.next() {
+                        tok_pos = num_pos;
+
+                        if (num_c < '0' || num_c > '9') && num_c != '.' {
+                            break;
+                        }
+                    }
+
+                    println!("{}", &code[pos .. tok_pos]);
+
+                    Token::Number(code[pos .. tok_pos].parse().unwrap())
+                }
 
                 chr => {
                     continue;

@@ -39,3 +39,23 @@ fn string_test() {
 
     assert_eq!(expected, tokens);
 }
+
+#[test]
+fn num_test() {
+    const CODE: &str = "1234.5 0.6 1234 -56890 .35 -123.4567";
+
+    let expected = vec![
+        Token::Number(1234.5),
+        Token::Number(0.6),
+        Token::Number(1234.0),
+        Token::Number(-56890.0),
+        Token::Number(0.35),
+        Token::Number(-123.4567),
+        Token::Eof
+    ];
+
+    let tokens = Lexer::parse(CODE).tokens().to_vec();
+    println!("{tokens:#?}");
+
+    assert_eq!(expected, tokens);
+}
