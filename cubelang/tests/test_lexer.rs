@@ -59,3 +59,34 @@ fn num_test() {
 
     assert_eq!(expected, tokens);
 }
+
+#[test]
+fn math_test() {
+    const CODE: &str = "(12 * 3) - 4 + 2.46 / (3 - -34.2437 * .5)";
+
+    let expected = vec![
+        Token::OpenParenthesis,
+        Token::Number(12.0),
+        Token::Asterisk,
+        Token::Number(3.0),
+        Token::CloseParenthesis,
+        Token::Minus,
+        Token::Number(4.0),
+        Token::Plus,
+        Token::Number(2.46),
+        Token::ForwardSlash,
+        Token::OpenParenthesis,
+        Token::Number(3.0),
+        Token::Minus,
+        Token::Number(-34.2437),
+        Token::Asterisk,
+        Token::Number(0.5),
+        Token::CloseParenthesis,
+        Token::Eof
+    ];
+
+    let tokens = Lexer::parse(CODE).tokens().to_vec();
+    println!("{tokens:#?}");
+
+    assert_eq!(expected, tokens);
+}

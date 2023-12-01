@@ -1,3 +1,6 @@
+use std::iter::{Enumerate, Peekable};
+use std::str::Chars;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     Identifier(String),
@@ -65,7 +68,17 @@ impl Lexer {
                 ']' => Token::CloseBracket,
 
                 '+' => Token::Plus,
-                '-' => Token::Minus,
+                '-' => {
+                    if let Some(peek) = enumerator.peek() {
+                        if peek.1.is_ascii_digit() {
+                            Self::parse_number(&mut enumerator, code, pos)
+                        } else {
+                            Token::Minus
+                        }
+                    } else {
+                        Token::Minus
+                    }
+                },
                 '*' => Token::Asterisk,
                 '/' => Token::ForwardSlash,
 
@@ -74,7 +87,18 @@ impl Lexer {
 
                 ',' => Token::Comma,
 
-                '.' => Token::Period,
+                '.' => {
+                    if let Some(peek) = enumerator.peek() {
+                        if peek.1.is_ascii_digit() {
+                            Self::parse_number(&mut enumerator, code, pos)
+                        } else {
+                            Token::Period
+                        }
+                    } else {
+                        Token::Period
+                    }
+                }
+
                 ':' => Token::Colon,
 
                 '\n' | '\r' | '\t' | ' ' => continue,
@@ -99,19 +123,7 @@ impl Lexer {
                 // Handle numbers.
                 // TODO: Negative numbers.
                 '0'..='9' => {
-                    let mut tok_pos = 0;
-
-                    while let Some((num_pos, num_c)) = enumerator.next() {
-                        tok_pos = num_pos;
-
-                        if (num_c < '0' || num_c > '9') && num_c != '.' {
-                            break;
-                        }
-                    }
-
-                    println!("{}", &code[pos .. tok_pos]);
-
-                    Token::Number(code[pos .. tok_pos].parse().unwrap())
+                    Self::parse_number(&mut enumerator, code, pos)
                 }
 
                 chr => {
@@ -132,4 +144,32 @@ impl Lexer {
     pub fn tokens(&self) -> &Vec<Token> {
         &self.tokens
     }
+
+    fn parse_number(enumerator: &mut Peekable<Enumerate<Chars>>, code: &str, pos: usize) -> Token {
+        let mut tok_pos = 0;
+
+        loop {
+            let (pos, c) = match enumerator.next() {
+                // Handle EOF scenario, we must bump the token position by 1, as the range used
+                // to get the number is exclusive on the upper bound.
+                None => {
+                    tok_pos += 1;
+                    break;
+                },
+                Some(p) => p
+            };
+
+            tok_pos = pos;
+
+            if !c.is_ascii_digit() && c != '.' {
+                break;
+            }
+        };
+
+        //tok_pos += 1;
+
+        Token::Number(code[pos .. tok_pos].parse().unwrap())
+    }
+
+
 }
